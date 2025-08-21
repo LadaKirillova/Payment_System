@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="1" author="Lada">
+        <sqlFile path="db/changelog/sql/01_drop_tables.sql"/>
+        <sqlFile path="db/changelog/sql/02_create_accounts.sql"/>
+        <sqlFile path="db/changelog/sql/03_create_payment_references.sql"/>
+        <sqlFile path="db/changelog/sql/04_create_transaction_type.sql"/>
+        <sqlFile path="db/changelog/sql/05_create_transactions.sql"/>
+        <sqlFile path="db/changelog/sql/06_add_foreign_keys.sql"/>
+        <sqlFile path="db/changelog/sql/07_insert_accounts.sql"/>
+        <sqlFile path="db/changelog/sql/08_insert_payment_references.sql"/>
+<!--        <sqlFile path="db/changelog/sql/09_insert_transactions.sql"/>-->
+<!--        <sqlFile path="db/changelog/sql/10_create_transaction_entries.sql"/>-->
+<!--        <sqlFile path="db/changelog/sql/11_insert_transaction_entries.sql"/>-->
+    </changeSet>
+</databaseChangeLog>

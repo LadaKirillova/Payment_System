@@ -1,0 +1,94 @@
+version: '3.8'
+services:
+    postgres:
+      image: postgres:13-alpine
+      environment:
+        POSTGRES_USER: LdKrlv
+        POSTGRES_PASSWORD: 0987765
+        POSTGRES_DB: Payment_system_prototype
+      ports:
+        - "5432:5432"
+      volumes:
+        - payment_system_prototype_data:/var/lib/postgresql/data
+      healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U LdKrlv -d Payment_system_prototype" ]
+        interval: 5s
+        timeout: 5s
+        retries: 10
+      networks:
+        - payment_network
+
+    pgadmin:
+      image: dpage/pgadmin4:7.8
+      environment:
+        PGADMIN_DEFAULT_EMAIL: ladkirillova@gmail.com
+        PGADMIN_DEFAULT_PASSWORD: 0987765
+      ports:
+        - "0.0.0.0:8081:80"
+      depends_on:
+        postgres:
+          condition: service_healthy
+      networks:
+        - payment_network
+
+    artemis:
+      image: vromero/activemq-artemis:2.16.0
+      container_name: payment_artemis
+      ports:
+        - "61616:61616"
+        - "8161:8161"
+      environment:
+        ARTEMIS_USER: artemis
+        ARTEMIS_PASSWORD: simetraehcapa
+        ANONYMOUS_LOGIN: "false"
+      volumes:
+        - artemis_data:/var/lib/artemis/data
+      networks:
+        - payment_network
+      healthcheck:
+#        test: ["CMD", "sh", "-c", "echo -e 'CONNECT\\n\\n' | nc -w 2 artemis 61616 | grep -q 'ActiveMQ']"]
+#        /добавили
+        test: ["CMD-SHELL", "curl -sSf http://localhost:8161/console || nc -z localhost 61616 || exit 0"]
+#        оригинал
+#        test: [ "CMD-SHELL", "netstat -tuln | grep 61616 || exit 1" ]
+        interval: 10s
+        timeout: 30s
+        retries: 15
+#        /добавили
+        start_period: 60s
+
+    payment-app:
+      build: ./Payment_System
+      ports:
+        - "8083:8080"
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/Payment_system_prototype
+        SPRING_DATASOURCE_USERNAME: LdKrlv
+        SPRING_DATASOURCE_PASSWORD: 0987765
+        SPRING_LIQUIBASE_ENABLED: "true"
+        SPRING_ARTEMIS_HOST: artemis
+        SPRING_ARTEMIS_PORT: 61616
+        SPRING_ARTEMIS_USER: artemis
+        SPRING_ARTEMIS_PASSWORD: simetraehcapa
+        SPRING_ARTEMIS_MODE: native
+        SPRING_ARTEMIS_INITIAL_CONNECT_ATTEMPTS: 10
+      depends_on:
+        postgres:
+          condition: service_healthy
+        artemis:
+          condition: service_healthy
+      networks:
+        - payment_network
+
+
+volumes:
+  payment_system_prototype_data:
+    driver: local
+  artemis_data:
+      driver: local
+
+networks:
+  payment_network:
+    driver: bridge
+
+

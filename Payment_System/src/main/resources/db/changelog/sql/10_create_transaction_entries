@@ -1,0 +1,9 @@
+CREATE TABLE transaction_entries (
+    id SERIAL PRIMARY KEY,
+    transactionId BIGINT NOT NULL,
+    account_number VARCHAR(30) NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
+    entry_date TIMESTAMP NOT NULL,
+    FOREIGN KEY (transactionId) REFERENCES transactions(transaction_id)
+);
