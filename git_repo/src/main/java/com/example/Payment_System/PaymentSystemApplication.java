@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class PaymentSystemApplication  {
 	public static void main(String[] args) {
 		SpringApplication.run(PaymentSystemApplication.class, args);
+		System.out.println("Application correct start");
 	}
 
 

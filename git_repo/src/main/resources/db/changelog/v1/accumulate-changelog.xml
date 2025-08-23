@@ -18,4 +18,11 @@
 <!--        <sqlFile path="db/changelog/sql/10_create_transaction_entries.sql"/>-->
 <!--        <sqlFile path="db/changelog/sql/11_insert_transaction_entries.sql"/>-->
     </changeSet>
+
+    <changeSet id="2" author="Lada">
+        <comment>Create users table for authentication</comment>
+        <sqlFile path="db/changelog/sql/12_create_users_table.sql"/>
+    </changeSet>
+
+
 </databaseChangeLog>
