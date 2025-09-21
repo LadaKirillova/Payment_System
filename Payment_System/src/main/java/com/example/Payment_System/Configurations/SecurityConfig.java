@@ -44,21 +44,25 @@ public class SecurityConfig {
         http
                 // Отключаем CSRF (для REST API не требуется)
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // Настраиваем политику сессий (STATELESS для JWT)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // Настройка авторизации запросов
+                //ДЛЯ ТЕСТА
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-
-                // Добавляем JWT-фильтр перед стандартным фильтром аутентификации
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                        .anyRequest().permitAll()  // Разрешаем ВСЕ запросы без аутентификации
+                );
+//ЗАКОММЕНТИРОВАЛИ ДЛЯ ТЕСТА
+//                // Настраиваем политику сессий (STATELESS для JWT)
+//                .sessionManagement(session ->
+//                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                )
+//
+//                // Настройка авторизации запросов
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/api/auth/login").permitAll()
+//                        .requestMatchers("/api/public/**").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//
+//                // Добавляем JWT-фильтр перед стандартным фильтром аутентификации
+//                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

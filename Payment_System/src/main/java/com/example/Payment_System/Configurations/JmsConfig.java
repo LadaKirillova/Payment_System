@@ -15,6 +15,7 @@ import org.springframework.jms.support.converter.MessageType; // Для указ
 
 @Configuration
 @EnableJms
+@org.springframework.context.annotation.Profile("!migration")
 public class JmsConfig {
 
     @Value("${spring.artemis.user}")
@@ -23,11 +24,17 @@ public class JmsConfig {
     @Value("${spring.artemis.password}")
     private String password;
 
+    @Value("${spring.artemis.broker-url:tcp://localhost:61616}")
+    private String brokerUrl; // ← читаем из настроек
+
+    @Value("${app.jms.listener.concurrency:3-3}")
+    private String concurrency;
+
     @Bean
     public ConnectionFactory connectionFactory() {
 
         ActiveMQJMSConnectionFactory factory = new ActiveMQJMSConnectionFactory(
-                "tcp://host.docker.internal:61616");
+                brokerUrl);
 //        ActiveMQJMSConnectionFactory factory = new ActiveMQJMSConnectionFactory("tcp://payment_artemis:61616");
         factory.setUser(username);
         factory.setPassword(password);
@@ -59,6 +66,7 @@ public class JmsConfig {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(messageConverter); //
+        factory.setConcurrency(concurrency);
         return factory;
     }
 }

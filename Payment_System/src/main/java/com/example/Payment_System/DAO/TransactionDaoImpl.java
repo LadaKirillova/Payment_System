@@ -1,5 +1,6 @@
 package com.example.Payment_System.DAO;
 
+import com.example.Payment_System.Configurations.Security.DatabaseRouter;
 import com.example.Payment_System.Model.Transaction;
 import com.example.Payment_System.Model.TransactionEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,33 +15,43 @@ import java.util.List;
 
 @Repository
 public class TransactionDaoImpl implements TransactionDao {
-    private final JdbcTemplate jdbcTemplate;
+
+    private final DatabaseRouter databaseRouter;
 
     @Autowired
-    public TransactionDaoImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public TransactionDaoImpl(DatabaseRouter databaseRouter) {
+        this.databaseRouter = databaseRouter;
     }
 
     @Override
     @Transactional
     public void createPayment(Transaction transaction, List<TransactionEntry> entries) {
+        // Определяем правильный JdbcTemplate на основе отправителя
+        JdbcTemplate jdbcTemplate = databaseRouter.getTemplate(transaction.getAccount_sender());
+
+        // Проверяем, что получатель того же типа (юр/физ)
+        JdbcTemplate receiverTemplate = databaseRouter.getTemplate(transaction.getAccount_receiver());
+        if (jdbcTemplate != receiverTemplate) {
+            throw new IllegalArgumentException("Cannot transfer between different account types");
+        }
+
         // 1. Вставка транзакции и получение ID
         Integer transactionId = jdbcTemplate.queryForObject(
                 "INSERT INTO transactions (" +
                         "amount, currency, date, " +
-                        "bic_sender, bic_receiver, " +  // Добавлены
+                        "bic_sender, bic_receiver, " +
                         "account_sender, account_receiver, " +
                         "type_id, comments" +
-                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING transaction_id",  // 9 параметров
+                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING transaction_id",
                 Integer.class,
                 transaction.getAmount(),
                 transaction.getCurrency(),
                 transaction.getDate() != null ? Timestamp.valueOf(transaction.getDate()) : null,
-                transaction.getBic_sender(),    // Новые поля
-                transaction.getBic_receiver(),  //
+                transaction.getBic_sender(),
+                transaction.getBic_receiver(),
                 transaction.getAccount_sender(),
                 transaction.getAccount_receiver(),
-                transaction.getType_id(),       // type_id вместо typeId
+                transaction.getType_id(),
                 transaction.getComments()
         );
 
@@ -48,12 +59,12 @@ public class TransactionDaoImpl implements TransactionDao {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO transaction_entries (" +
                         "transactionId, account_number, " +
-                        "amount, currency, entry_date" +  // entry_date вместо entryDate
+                        "amount, currency, entry_date" +
                         ") VALUES (?, ?, ?, ?, ?)",
                 entries.stream()
                         .map(e -> new Object[]{
                                 transactionId,
-                                e.getAccount_number(),  // account_number вместо accountNumber
+                                e.getAccount_number(),
                                 e.getAmount(),
                                 e.getCurrency(),
                                 e.getEntry_date() != null ? Timestamp.valueOf(e.getEntry_date()) : null
@@ -64,6 +75,7 @@ public class TransactionDaoImpl implements TransactionDao {
 
     @Override
     public BigDecimal calculateBalance(String accountNumber) {
+        JdbcTemplate jdbcTemplate = databaseRouter.getTemplate(accountNumber);
         return jdbcTemplate.queryForObject(
                 "SELECT current_balance + COALESCE(" +
                         "(SELECT SUM(amount) FROM transaction_entries WHERE account_number = ?), 0) " +
@@ -75,40 +87,55 @@ public class TransactionDaoImpl implements TransactionDao {
 
     @Override
     public List<Transaction> getAllTransactions() {
-        return jdbcTemplate.query(
+        // Получаем транзакции из обеих БД и объединяем
+        JdbcTemplate legalTemplate = databaseRouter.getTemplateByType("LEGAL");
+        JdbcTemplate individualTemplate = databaseRouter.getTemplateByType("INDIVIDUAL");
+
+        List<Transaction> legalTransactions = legalTemplate.query(
                 "SELECT * FROM transactions",
-                (rs, rowNum) -> {
-                    Transaction t = new Transaction();
-                    // Основные поля
-                    t.setTransaction_id(rs.getInt("transaction_id"));
-                    t.setAmount(rs.getBigDecimal("amount"));
-                    t.setCurrency(rs.getString("currency"));
-
-                    // Обработка даты (Timestamp → String)
-                    Timestamp timestamp = rs.getTimestamp("date");
-                    t.setDate(timestamp != null ?
-                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp) :
-                            null);
-
-                    // Поля отправителя/получателя
-                    t.setBic_sender(rs.getString("bic_sender"));
-                    t.setBic_receiver(rs.getString("bic_receiver"));
-                    t.setAccount_sender(rs.getString("account_sender"));
-                    t.setAccount_receiver(rs.getString("account_receiver"));
-
-                    // Дополнительные поля
-                    t.setType_id(rs.getInt("type_id"));
-                    t.setComments(rs.getString("comments"));
-
-                    // Загрузка связанных проводок
-                    t.setEntries(getTransactionEntries(t.getTransaction_id()));
-                    return t;
-                }
+                this::mapTransaction
         );
+
+        List<Transaction> individualTransactions = individualTemplate.query(
+                "SELECT * FROM transactions",
+                this::mapTransaction
+        );
+
+        legalTransactions.addAll(individualTransactions);
+        return legalTransactions;
+    }
+
+    private Transaction mapTransaction(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        Transaction t = new Transaction();
+        // Основные поля
+        t.setTransaction_id(rs.getInt("transaction_id"));
+        t.setAmount(rs.getBigDecimal("amount"));
+        t.setCurrency(rs.getString("currency"));
+
+        // Обработка даты (Timestamp → String)
+        Timestamp timestamp = rs.getTimestamp("date");
+        t.setDate(timestamp != null ?
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp) :
+                null);
+
+        // Поля отправителя/получателя
+        t.setBic_sender(rs.getString("bic_sender"));
+        t.setBic_receiver(rs.getString("bic_receiver"));
+        t.setAccount_sender(rs.getString("account_sender"));
+        t.setAccount_receiver(rs.getString("account_receiver"));
+
+        // Дополнительные поля
+        t.setType_id(rs.getInt("type_id"));
+        t.setComments(rs.getString("comments"));
+
+        // Загрузка связанных проводок
+        t.setEntries(getTransactionEntries(t.getTransaction_id(),
+                databaseRouter.getTemplate(t.getAccount_sender())));
+        return t;
     }
 
     // Вспомогательный метод для загрузки проводок
-    private List<TransactionEntry> getTransactionEntries(int transactionId) {
+    private List<TransactionEntry> getTransactionEntries(int transactionId, JdbcTemplate jdbcTemplate) {
         return jdbcTemplate.query(
                 "SELECT * FROM transaction_entries WHERE transactionId = ?",
                 (rs, rowNum) -> {
@@ -129,28 +156,10 @@ public class TransactionDaoImpl implements TransactionDao {
                 transactionId
         );
     }
-//    @Override
-//    public List<Transaction> getAllTransactions() {
-//        return jdbcTemplate.query(
-//                "SELECT * FROM transactions",
-//                (rs, rowNum) -> new Transaction(
-//                        rs.getInt("transaction_id"),
-//                        rs.getBigDecimal("amount"),
-//                        rs.getString("currency"),
-//                        rs.getTimestamp("date").toLocalDateTime(),
-//                        rs.getString("bic_sender"),
-//                        rs.getString("bic_receiver"),
-//                        rs.getString("account_sender"),
-//                        rs.getString("account_receiver"),
-//                        rs.getInt("type_id"),
-//                        rs.getString("comments"),
-//                        null
-//                )
-//        );
-//    }
 
     @Override
     public BigDecimal getBalanceByAccount(String accountNumber) {
+        JdbcTemplate jdbcTemplate = databaseRouter.getTemplate(accountNumber);
         return jdbcTemplate.queryForObject(
                 "SELECT current_balance FROM accounts WHERE account_number = ?",
                 BigDecimal.class,
@@ -158,4 +167,3 @@ public class TransactionDaoImpl implements TransactionDao {
         );
     }
 }
-
