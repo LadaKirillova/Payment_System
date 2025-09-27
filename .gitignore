@@ -13,3 +13,11 @@ target/
 /resources/
 /git_repo/
 /Payment_System/target/
+
+# build artifacts
+/target/
+/Payment_System/target/
+
+# build artifacts
+/target/
+/Payment_System/target/
