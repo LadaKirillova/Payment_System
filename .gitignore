@@ -1,0 +1,11 @@
+target/
+*.log
+*.tmp
+
+.idea/
+*.iml
+
+.mvn/wrapper/
+/src/
+/git_repo/Payment_System/src/
+/Payment_System/target/
