@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: Payment_System
+  datasource:
+        url: jdbc:postgresql://host.docker.internal:5432/Payment_system_prototype
+        username: LdKrlv
+        password: 0987765
+        driver-class-name: org.postgresql.Driver
+
+  liquibase:
+      change-log: classpath:db/changelog/changelog-master.xml
+      default-schema: public
+  artemis:
+    host: artemis
+    port: 61616
+    user: artemis
+    password: simetraehcapa
+    mode: native
+#    broker-url: "tcp://payment_artemis:61616?reconnectAttempts=-1"
+    broker-url: "tcp://host.docker.internal:61616?reconnectAttempts=-1"
+  logging:
+    level:
+      org.springframework.jms: DEBUG
+
+server:
+  port: 8080
+

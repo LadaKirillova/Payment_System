@@ -1,0 +1,141 @@
+version: '3.8'
+services:
+  postgres_individual:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: LdKrlv
+      POSTGRES_PASSWORD: 0987765
+      POSTGRES_DB: payment_system_individual
+    ports:
+      - "5432:5432"
+    volumes:
+      - payment_system_individual_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U LdKrlv -d payment_system_individual" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - payment_network
+
+  postgres_legal:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: LdKrlv
+      POSTGRES_PASSWORD: 0987765
+      POSTGRES_DB: payment_system_legal
+    ports:
+      - "5433:5432"
+    volumes:
+      - payment_system_legal_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U LdKrlv -d payment_system_legal" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - payment_network
+
+  pgadmin:
+    image: dpage/pgadmin4:7.8
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ladkirillova@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 0987765
+      PGADMIN_CONFIG_WTF_CSRF_ENABLED: 'False'
+      PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT: 'False'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+    ports:
+      - "0.0.0.0:8081:80"
+    depends_on:
+      postgres_individual:
+        condition: service_healthy
+      postgres_legal:
+        condition: service_healthy
+    networks:
+      - payment_network
+
+  artemis:
+    image: vromero/activemq-artemis:2.16.0
+    container_name: payment_artemis
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      ARTEMIS_USER: artemis
+      ARTEMIS_PASSWORD: simetraehcapa
+      ANONYMOUS_LOGIN: "false"
+    volumes:
+      - artemis_data:/var/lib/artemis/data
+    networks:
+      - payment_network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sSf http://localhost:8161/console || nc -z localhost 61616 || exit 0" ]
+      interval: 10s
+      timeout: 30s
+      retries: 15
+      start_period: 60s
+
+  payment-app:
+    build: ./Payment_System
+    environment:
+      SPRING_DATASOURCE_LEGAL_JDBC_URL: jdbc:postgresql://postgres_legal:5432/payment_system_legal
+      SPRING_DATASOURCE_LEGAL_USERNAME: LdKrlv
+      SPRING_DATASOURCE_LEGAL_PASSWORD: 0987765
+      SPRING_DATASOURCE_INDIVIDUAL_JDBC_URL: jdbc:postgresql://postgres_individual:5432/payment_system_individual
+      SPRING_DATASOURCE_INDIVIDUAL_USERNAME: LdKrlv
+      SPRING_DATASOURCE_INDIVIDUAL_PASSWORD: 0987765
+      SPRING_LIQUIBASE_ENABLED: "false"
+      APP_LIQUIBASE_ENABLED: "true"
+      APP_LIQUIBASE_LEGAL_ENABLED: "true"
+      APP_LIQUIBASE_INDIVIDUAL_ENABLED: "true"
+      SPRING_ARTEMIS_BROKER_URL: tcp://artemis:61616?reconnectAttempts=-1
+      SPRING_ARTEMIS_USER: artemis
+      SPRING_ARTEMIS_PASSWORD: simetraehcapa
+      APP_INITDATA_ENABLED: "true"
+    depends_on:
+      postgres_individual:
+        condition: service_healthy
+      postgres_legal:
+        condition: service_healthy
+      artemis:
+        condition: service_healthy
+    networks:
+      - payment_network
+    deploy:
+      replicas: 3
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  load-generator:
+    build: ./load-generator
+    command: sh -c "sleep 180 && java LoadGenerator"
+    depends_on:
+      - payment-app
+    networks:
+      - payment_network
+    restart: "no"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8083:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - payment_network
+
+volumes:
+  payment_system_individual_data:
+    driver: local
+  payment_system_legal_data:
+    driver: local
+  artemis_data:
+    driver: local
+
+networks:
+  payment_network:
+    driver: bridge
