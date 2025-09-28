@@ -70,12 +70,12 @@ public class TransactionProcessor {
 
     @JmsListener(
             destination = "transaction.queue",
-            containerFactory = "jmsListenerContainerFactory", // если у тебя так уже было
+            containerFactory = "jmsListenerContainerFactory",
             concurrency = "3-3"
     )
     public void process(Transaction transaction) throws Exception {
         log.info("Processing (JMS) in {}", Thread.currentThread().getName());
-        Thread.sleep(10_000); // твоя тестовая задержка
+        Thread.sleep(10_000);
         transactionService.makePayment(transaction, transaction.getEntries());
         log.info("Processed (JMS)");
     }

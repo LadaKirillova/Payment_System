@@ -12,3 +12,7 @@ class KafkaSender implements MessageSender {
     KafkaSender(KafkaTemplate<String, Transaction> kt){ this.kt = kt; }
     public void send(Transaction t){ kt.send("transactions", t); }
 }
+
+
+
+

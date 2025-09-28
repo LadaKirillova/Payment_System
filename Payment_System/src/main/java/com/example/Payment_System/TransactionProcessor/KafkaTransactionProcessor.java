@@ -29,3 +29,8 @@ public class KafkaTransactionProcessor {
         log.info("Processed by {}", Thread.currentThread().getName());
     }
 }
+
+//Слушает очередь/топик и ждет сообщения
+//
+//Обрабатывает транзакции когда они приходят
+

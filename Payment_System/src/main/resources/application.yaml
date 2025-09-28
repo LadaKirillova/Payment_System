@@ -23,14 +23,14 @@ spring:
     #    broker-url: "tcp://payment_artemis:61616?reconnectAttempts=-1"
     broker-url: ${SPRING_ARTEMIS_BROKER_URL:tcp://localhost:61616?reconnectAttempts=-1}
 
-#  logging:
-#    level:
-#      org.springframework.jms: DEBUG
+  #  logging:
+  #    level:
+  #      org.springframework.jms: DEBUG
 
   # >>> ДОБАВИТЬ: Kafka-конфиг
   kafka:
-    bootstrap-servers: localhost:9092
-#    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:host.docker.internal:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    #    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:host.docker.internal:9092}
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
