@@ -29,7 +29,8 @@ spring:
 
   # >>> ДОБАВИТЬ: Kafka-конфиг
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    bootstrap-servers: localhost:9092
+#    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:host.docker.internal:9092}
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -45,7 +46,7 @@ spring:
 
     admin:
       properties:
-        bootstrap.servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+        bootstrap.servers: localhost:9092
 
   logging:
     level:
@@ -64,4 +65,4 @@ app:
     individual-enabled: true
 
   messaging:
-    backend: artemis
+    backend: kafka

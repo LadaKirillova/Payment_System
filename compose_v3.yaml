@@ -90,14 +90,14 @@ services:
       - --advertise-kafka-addr=PLAINTEXT://kafka:9092
     ports:
       - "9092:9092"
-      - "9644:9644"   # admin api (опционально)
+      - "9644:9644"
     networks: [ payment_network ]
     healthcheck:
-      test: [ "CMD-SHELL", "rpk cluster info -X brokers=kafka:9092 >/dev/null 2>&1 || exit 1" ]
+      test: ["CMD-SHELL", "rpk cluster info -X brokers=kafka:9092 >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 20
-      start_period: 20s
+      retries: 30          # увеличено
+      start_period: 40s    # увеличено, чтобы Kafka успела полностью стартовать
 
   redpanda-console:
     image: redpandadata/console:latest
