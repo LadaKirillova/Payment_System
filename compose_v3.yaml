@@ -109,6 +109,24 @@ services:
       retries: 10
       start_period: 40s
 
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: payment_kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9092"
+      JVM_OPTS: "-Xms32M -Xmx64M"
+    depends_on:
+      - kafka
+    networks:
+      - payment_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 #  kafka:
 #    image: wurstmeister/kafka:latest
 #    container_name: payment_kafka
