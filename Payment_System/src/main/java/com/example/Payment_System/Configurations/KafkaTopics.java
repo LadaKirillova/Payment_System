@@ -14,4 +14,11 @@ public class KafkaTopics {
                 .replicas(1)
                 .build();
     }
+    @Bean
+    public NewTopic receiptsTopic() {
+        return TopicBuilder.name("receipts")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

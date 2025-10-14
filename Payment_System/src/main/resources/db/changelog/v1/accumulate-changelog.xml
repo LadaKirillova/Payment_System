@@ -15,7 +15,7 @@
         <sqlFile path="db/changelog/sql/07_insert_accounts.sql"/>
         <sqlFile path="db/changelog/sql/08_insert_payment_references.sql"/>
 <!--        <sqlFile path="db/changelog/sql/09_insert_transactions.sql"/>-->
-<!--        <sqlFile path="db/changelog/sql/10_create_transaction_entries.sql"/>-->
+        <sqlFile path="db/changelog/sql/10_create_transaction_entries.sql"/>
 <!--        <sqlFile path="db/changelog/sql/11_insert_transaction_entries.sql"/>-->
     </changeSet>
 

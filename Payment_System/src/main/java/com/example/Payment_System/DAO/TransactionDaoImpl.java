@@ -58,7 +58,7 @@ public class TransactionDaoImpl implements TransactionDao {
         // 2. Пакетная вставка проводок
         jdbcTemplate.batchUpdate(
                 "INSERT INTO transaction_entries (" +
-                        "transactionId, account_number, " +
+                        "transaction_id, account_number, " +
                         "amount, currency, entry_date" +
                         ") VALUES (?, ?, ?, ?, ?)",
                 entries.stream()
@@ -137,11 +137,11 @@ public class TransactionDaoImpl implements TransactionDao {
     // Вспомогательный метод для загрузки проводок
     private List<TransactionEntry> getTransactionEntries(int transactionId, JdbcTemplate jdbcTemplate) {
         return jdbcTemplate.query(
-                "SELECT * FROM transaction_entries WHERE transactionId = ?",
+                "SELECT * FROM transaction_entries WHERE transaction_id = ?",
                 (rs, rowNum) -> {
                     TransactionEntry e = new TransactionEntry();
                     e.setId(rs.getInt("id"));
-                    e.setTransactionId(rs.getInt("transactionId"));
+                    e.setTransactionId(rs.getInt("transaction_id"));
                     e.setAccount_number(rs.getString("account_number"));
                     e.setAmount(rs.getBigDecimal("amount"));
                     e.setCurrency(rs.getString("currency"));

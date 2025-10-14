@@ -65,4 +65,4 @@ app:
     individual-enabled: true
 
   messaging:
-    backend: kafka
+    backend: artemis

@@ -6,8 +6,10 @@ import com.example.Payment_System.Model.Transaction;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 @ComponentScan(basePackages = "com.example.Payment_System")
 public class PaymentSystemApplication  {
 	public static void main(String[] args) {

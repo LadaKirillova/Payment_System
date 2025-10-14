@@ -16,7 +16,7 @@ public class TransactionEntry {
     @JsonProperty("transactionId")
     private Integer transactionId;
 
-    @JsonProperty("accountNumber")
+    @JsonProperty("account_number")
     private String account_number;
 
     @JsonProperty("amount")
@@ -25,7 +25,7 @@ public class TransactionEntry {
     @JsonProperty("currency")
     private String currency;
 
-    @JsonProperty("entryDate")
+    @JsonProperty("entry_date")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String entry_date;
 }
