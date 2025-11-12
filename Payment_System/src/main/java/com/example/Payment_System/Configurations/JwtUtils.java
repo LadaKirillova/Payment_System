@@ -15,7 +15,9 @@ import java.util.Date;
 public class JwtUtils {
     // Секретный ключ для подписи токенов (автоматически генерируется при старте приложения)
     // Используем алгоритм HS512, который требует ключ длиной минимум 512 бит
-    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    private final SecretKey SECRET_KEY =
+            Keys.hmacShaKeyFor("c3VwZXJzZWNyZXRwYXltZW50a2V5c3VwZXJzZWNyZXRwYXltZW50a2V5MTIzNDU2Nzg5".getBytes());
+
 
     // Время жизни токена в миллисекундах (24 часа)
     private final long EXPIRATION_MS = 86400000;

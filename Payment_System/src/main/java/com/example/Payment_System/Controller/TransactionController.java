@@ -56,4 +56,11 @@ public class TransactionController {
         sender.send(transaction);
         log.info("Payment enqueued: {} {}", transaction.getAmount(), transaction.getCurrency());
     }
+
+    // endpoint for Tyk test
+    @GetMapping("/tyktest")
+    public String tyk() {
+        return "tyk ok";
+    }
 }
+

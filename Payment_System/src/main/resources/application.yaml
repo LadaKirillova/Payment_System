@@ -54,8 +54,14 @@ spring:
       # >>> (не обязательно, но полезно) добавь логирование Kafka:
       org.springframework.kafka: INFO
 
+  data:
+    redis:
+      host: redis
+      port: 6379
+
 server:
   port: 8080
+#  поменяли с 8080 при добавлении tyk на 8080
 
 # Свои флаги (по умолчанию всё выкл)
 app:
@@ -65,4 +71,4 @@ app:
     individual-enabled: true
 
   messaging:
-    backend: artemis
+    backend: kafka
