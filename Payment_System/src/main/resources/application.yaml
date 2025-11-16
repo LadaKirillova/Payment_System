@@ -48,6 +48,11 @@ spring:
       properties:
         bootstrap.servers: localhost:9092
 
+  graphql:
+    path: /graphql
+    graphiql:
+      enabled: true
+
   logging:
     level:
       org.springframework.jms: DEBUG

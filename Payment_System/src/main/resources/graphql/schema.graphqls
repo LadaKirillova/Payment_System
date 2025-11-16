@@ -1,0 +1,38 @@
+# 1. ОПИСЫВАЕМ ДАННЫЕ - на основе ВАШИХ Java классов!
+type Transaction {
+    transaction_id: Int!
+    amount: Float!
+    currency: String
+    account_sender: String!
+    account_receiver: String!
+    comments: String
+}
+
+type Account {
+    accountNumber: String!
+    currentBalance: Float!
+    currency: String!
+}
+
+# 2. ЗАПРОСЫ (что можно спросить)
+type Query {
+    # Простейший тест
+    test: String!
+
+    # Получить все транзакции
+    transactions: [Transaction]!
+
+    # Получить баланс счета
+    balance(accountNumber: String!): Float!
+}
+
+# 3. ИЗМЕНЕНИЯ (что можно изменить)
+type Mutation {
+    # Создать платеж
+    createPayment(
+        accountFrom: String!
+        accountTo: String!
+        amount: Float!
+        currency: String
+    ): String!
+}
