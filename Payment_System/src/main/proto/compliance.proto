@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package com.example.Payment_System.Compliance;
+
+option java_package = "com.example.Payment_System.Compliance";
+option java_multiple_files = true;
+
+service ComplianceService {
+  rpc Check(CheckRequest) returns (CheckResponse);
+}
+
+message CheckRequest {
+  string accountNumber = 1;
+}
+
+message CheckResponse {
+  bool approved = 1;
+}

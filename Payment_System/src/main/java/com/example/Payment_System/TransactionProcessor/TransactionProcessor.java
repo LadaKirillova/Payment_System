@@ -96,7 +96,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionProcessor {
 
     private final TransactionService transactionService;
-    private final OutboxService outboxService; // 👈 добавили
+    private final OutboxService outboxService;
 
     @JmsListener(
             destination = "transaction.queue",

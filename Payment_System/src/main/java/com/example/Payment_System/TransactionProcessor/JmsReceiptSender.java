@@ -17,7 +17,7 @@ public class JmsReceiptSender {
     }
 
     public void send(Receipt receipt){
-        // 👇 Самый простой вызов: отправляем квитанцию в очередь "receipt.queue"
+        //  Самый простой вызов: отправляем квитанцию в очередь "receipt.queue"
         jmsTemplate.convertAndSend("receipt.queue", receipt);
     }
 }

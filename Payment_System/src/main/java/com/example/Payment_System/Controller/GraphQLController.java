@@ -19,7 +19,6 @@ public class GraphQLController {
     private final TransactionService transactionService;
     private final MessageSender sender;
 
-    // ===== ПРОСТЕЙШИЕ QUERIES =====
 
     @QueryMapping
     public String test() {

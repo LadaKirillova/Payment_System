@@ -1,4 +1,4 @@
-# 1. ОПИСЫВАЕМ ДАННЫЕ - на основе ВАШИХ Java классов!
+# 1. ОПИСЫВАЕМ ДАННЫЕ - на основе Java классов!
 type Transaction {
     transaction_id: Int!
     amount: Float!
